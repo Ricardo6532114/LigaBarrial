@@ -13,36 +13,30 @@ import java.util.Scanner;
 
 public class InterfazCampeonatoGUI extends JFrame {
 
-    // Instancias de tus clases originales sin modificar
     private final SistemaCLI moduloInscripciones;
     private final ModuloCalendario moduloCalendario;
-
-    // Lista de actas para el Módulo 3
     private final List<ActaPartido> actasRegistradas = new ArrayList<>();
 
-    // Modelos de tablas para actualizar la vista
     private DefaultTableModel modeloPersonas;
     private DefaultTableModel modeloEquipos;
     private DefaultTableModel modeloPartidos;
 
-    // Combos dinámicos
     private JComboBox<String> comboEquiposInscripcion;
     private JComboBox<String> comboPersonasExistentes;
     private JComboBox<String> comboEquiposDetalle;
     private JComboBox<String> comboPartidosReprogramar;
     private JComboBox<String> comboPartidosAsistencia;
-
-    // Combos para Módulo 3 (Actas)
+    
+    // Controles específicos para el Módulo 3
     private JComboBox<String> comboPartidosParaActa;
     private JComboBox<String> comboActasActivas;
-    private JComboBox<String> comboEquipoEvento;
+    private JComboBox<String> comboEquipoEventoGol;
+    private JComboBox<String> comboEquipoEventoTarjeta;
     private JComboBox<String> comboTipoTarjeta;
 
-    // Área de detalle de equipo y actas
     private JTextArea areaDetalleEquipo;
     private JTextArea areaDetalleActa;
 
-    // Lista temporal para inscripción de plantilla
     private final List<Jugador> plantillaTemporal = new ArrayList<>();
     private DefaultListModel<String> modeloListaTemporal;
     private JComboBox<String> comboCapitanTemporal;
@@ -52,7 +46,7 @@ public class InterfazCampeonatoGUI extends JFrame {
         moduloCalendario = new ModuloCalendario();
 
         setTitle("Sistema de Gestión Integral - Campeonato Barrial");
-        setSize(1050, 750);
+        setSize(1100, 780);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -621,43 +615,65 @@ public class InterfazCampeonatoGUI extends JFrame {
 
         JPanel panelControles = new JPanel(new GridLayout(3, 1, 10, 10));
 
-        // 1. Iniciar Acta
+        // 1. Abrir Acta (Mínimo de jugadores fijo a 6 por defecto)
         JPanel subIniciar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         subIniciar.setBorder(new TitledBorder("1. Abrir Acta de Partido"));
         comboPartidosParaActa = new JComboBox<>();
-        JTextField txtMinJugadores = new JTextField("7", 4);
-        JButton btnIniciarActa = new JButton("Iniciar Acta (Validar mínimo)");
+        JTextField txtMinJugadores = new JTextField("6", 3); // Mínimo 6 jugadores en cancha
+        JButton btnIniciarActa = new JButton("Iniciar Acta (Mín. 6 jugadores)");
 
-        subIniciar.add(new JLabel("Partido:"));
+        subIniciar.add(new JLabel("Seleccionar Partido Programado:"));
         subIniciar.add(comboPartidosParaActa);
-        subIniciar.add(new JLabel("Mín. Jugadores:"));
+        subIniciar.add(new JLabel("Mínimo:"));
         subIniciar.add(txtMinJugadores);
         subIniciar.add(btnIniciarActa);
 
-        // 2. Registrar Eventos (Goles y Sanciones con minuto)
-        JPanel subEventos = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        // 2. Registrar Eventos (Goles y Tarjetas organizados de forma clara)
+        JPanel subEventos = new JPanel(new GridLayout(2, 1, 5, 5));
         subEventos.setBorder(new TitledBorder("2. Registrar Goles y Tarjetas (RF6 y RF7)"));
         comboActasActivas = new JComboBox<>();
-        comboEquipoEvento = new JComboBox<>(new String[]{"Local", "Visitante"});
-        JTextField txtCedulaJugadorEvento = new JTextField(9);
-        JTextField txtMinuto = new JTextField(3);
-        comboTipoTarjeta = new JComboBox<>(new String[]{"Amarilla", "Roja"});
+
+        // Subpanel Goles
+        JPanel subGol = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+        JComboBox<String> comboJugadoresGol = new JComboBox<>();
+        comboEquipoEventoGol = new JComboBox<>(new String[]{"Local", "Visitante"});
+        JTextField txtMinutoGol = new JTextField(3);
         JButton btnGol = new JButton("Registrar Gol");
-        JButton btnTarjeta = new JButton("Registrar Sanción");
 
-        subEventos.add(new JLabel("Acta:"));
-        subEventos.add(comboActasActivas);
-        subEventos.add(new JLabel("Eq:"));
-        subEventos.add(comboEquipoEvento);
-        subEventos.add(new JLabel("Cédula Jugador:"));
-        subEventos.add(txtCedulaJugadorEvento);
-        subEventos.add(new JLabel("Min':"));
-        subEventos.add(txtMinuto);
-        subEventos.add(comboTipoTarjeta);
-        subEventos.add(btnGol);
-        subEventos.add(btnTarjeta);
+        subGol.add(new JLabel("Acta:"));
+        subGol.add(comboActasActivas);
+        subGol.add(new JLabel("Equipo:"));
+        subGol.add(comboEquipoEventoGol);
+        subGol.add(new JLabel("Cédula Jugador:"));
+        JTextField txtCedulaGol = new JTextField(9);
+        subGol.add(txtCedulaGol);
+        subGol.add(new JLabel("Min':"));
+        subGol.add(txtMinutoGol);
+        subGol.add(btnGol);
 
-        // 3. Finalizar y controles generales
+        // Subpanel Tarjetas (Sanciones con opción a elegir Amarilla o Roja y Minuto)
+        JPanel subTarjeta = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+        JComboBox<String> comboActasActivasTarjeta = new JComboBox<>();
+        comboEquipoEventoTarjeta = new JComboBox<>(new String[]{"Local", "Visitante"});
+        JTextField txtCedulaTarjeta = new JTextField(9);
+        JTextField txtMinutoTarjeta = new JTextField(3);
+        comboTipoTarjeta = new JComboBox<>(new String[]{"Amarilla", "Roja"});
+        JButton btnTarjeta = new JButton("Registrar Tarjeta");
+
+        subTarjeta.add(new JLabel("Equipo:"));
+        subTarjeta.add(comboEquipoEventoTarjeta);
+        subTarjeta.add(new JLabel("Cédula Jugador:"));
+        subTarjeta.add(txtCedulaTarjeta);
+        subTarjeta.add(new JLabel("Min':"));
+        subTarjeta.add(txtMinutoTarjeta);
+        subTarjeta.add(new JLabel("Tipo:"));
+        subTarjeta.add(comboTipoTarjeta);
+        subTarjeta.add(btnTarjeta);
+
+        subEventos.add(subGol);
+        subEventos.add(subTarjeta);
+
+        // 3. Cierre y Finalización
         JPanel subFinalizar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         subFinalizar.setBorder(new TitledBorder("3. Cierre y Disciplina"));
         JButton btnFinalizarPartido = new JButton("Finalizar Partido / Ver Acta Oficial");
@@ -676,7 +692,7 @@ public class InterfazCampeonatoGUI extends JFrame {
         areaDetalleActa.setEditable(false);
         areaDetalleActa.setFont(new Font("Monospaced", Font.PLAIN, 13));
 
-        // Eventos Módulo 3
+        // Eventos de la pestaña Actas
         btnIniciarActa.addActionListener(e -> {
             int idx = comboPartidosParaActa.getSelectedIndex();
             List<Partido> partidos = moduloCalendario.getPartidos();
@@ -693,13 +709,10 @@ public class InterfazCampeonatoGUI extends JFrame {
                 return;
             }
 
-            int minJug;
+            int minJug = 6; // Obligatorio mínimo 6 jugadores en cancha
             try {
                 minJug = Integer.parseInt(txtMinJugadores.getText().trim());
-            } catch (NumberFormatException ex) {
-                mostrarError("Mínimo de jugadores inválido.");
-                return;
-            }
+            } catch (Exception ignored) {}
 
             ActaPartido acta = new ActaPartido(p, local, visitante, minJug);
             boolean iniciado = acta.iniciarPartido();
@@ -707,9 +720,9 @@ public class InterfazCampeonatoGUI extends JFrame {
             actualizarCombosActas();
 
             if (iniciado) {
-                JOptionPane.showMessageDialog(this, "Acta iniciada correctamente. Partido en curso.");
+                JOptionPane.showMessageDialog(this, "Acta abierta correctamente. Partido en curso (Mín. 6 jugadores).");
             } else {
-                JOptionPane.showMessageDialog(this, "¡PARTIDO SUSPENDIDO! No cumple con el mínimo de jugadores habilitados.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "¡PARTIDO SUSPENDIDO! No cumple con el mínimo de 6 jugadores habilitados en cancha.", "Aviso", JOptionPane.WARNING_MESSAGE);
             }
             areaDetalleActa.setText(acta.generarTextoActa());
         });
@@ -718,59 +731,61 @@ public class InterfazCampeonatoGUI extends JFrame {
             ActaPartido acta = obtenerActaSeleccionadaCombo();
             if (acta == null) return;
 
-            Equipo eq = comboEquipoEvento.getSelectedIndex() == 0 ? acta.getEquipoLocal() : acta.getEquipoVisitante();
-            String cedula = txtCedulaJugadorEvento.getText().trim();
+            Equipo eq = comboEquipoEventoGol.getSelectedIndex() == 0 ? acta.getEquipoLocal() : acta.getEquipoVisitante();
+            String cedula = txtCedulaGol.getText().trim();
             Jugador j = buscarJugadorPorCedula(eq, cedula);
 
             if (j == null) {
-                mostrarError("Jugador no encontrado con esa cédula en el equipo seleccionado.");
+                mostrarError("Jugador no encontrado con esa cédula en el equipo seleccionado (" + eq.getNombreEquipo() + ").");
                 return;
             }
 
             int minuto;
             try {
-                minuto = Integer.parseInt(txtMinuto.getText().trim());
+                minuto = Integer.parseInt(txtMinutoGol.getText().trim());
             } catch (NumberFormatException ex) {
-                mostrarError("Ingrese un minuto válido.");
+                mostrarError("Ingrese un minuto válido para el gol.");
                 return;
             }
 
             acta.registrarGol(eq, j, minuto);
-            txtMinuto.setText("");
+            txtMinutoGol.setText("");
+            txtCedulaGol.setText("");
             areaDetalleActa.setText(acta.generarTextoActa());
-            JOptionPane.showMessageDialog(this, "Gol registrado correctamente en el minuto " + minuto + "'.");
+            JOptionPane.showMessageDialog(this, "Gol de " + j.getNombre() + " (" + eq.getNombreEquipo() + ") registrado en el minuto " + minuto + "'.");
         });
 
         btnTarjeta.addActionListener(e -> {
             ActaPartido acta = obtenerActaSeleccionadaCombo();
             if (acta == null) return;
 
-            Equipo eq = comboEquipoEvento.getSelectedIndex() == 0 ? acta.getEquipoLocal() : acta.getEquipoVisitante();
-            String cedula = txtCedulaJugadorEvento.getText().trim();
+            Equipo eq = comboEquipoEventoTarjeta.getSelectedIndex() == 0 ? acta.getEquipoLocal() : acta.getEquipoVisitante();
+            String cedula = txtCedulaTarjeta.getText().trim();
             Jugador j = buscarJugadorPorCedula(eq, cedula);
 
             if (j == null) {
-                mostrarError("Jugador no encontrado con esa cédula en el equipo seleccionado.");
+                mostrarError("Jugador no encontrado con esa cédula en el equipo seleccionado (" + eq.getNombreEquipo() + ").");
                 return;
             }
 
             int minuto;
             try {
-                minuto = Integer.parseInt(txtMinuto.getText().trim());
+                minuto = Integer.parseInt(txtMinutoTarjeta.getText().trim());
             } catch (NumberFormatException ex) {
-                mostrarError("Ingrese un minuto válido.");
+                mostrarError("Ingrese un minuto válido para la tarjeta.");
                 return;
             }
 
             String tipoTarjeta = (String) comboTipoTarjeta.getSelectedItem();
-            acta.registrarSancion(eq, j, tipoTarjeta, minuto, "Falta o infracción de juego");
-            txtMinuto.setText("");
+            acta.registrarSancion(eq, j, tipoTarjeta, minuto, "Infracción reglamentaria");
+            txtMinutoTarjeta.setText("");
+            txtCedulaTarjeta.setText("");
             areaDetalleActa.setText(acta.generarTextoActa());
 
             if (j.isExpulsado()) {
                 JOptionPane.showMessageDialog(this, "¡ALERTA RF7! El jugador " + j.getNombre() + " acumuló tarjeta roja / doble amarilla, fue expulsado y suspendido 1 partido.", "Disciplina", JOptionPane.WARNING_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(this, "Tarjeta " + tipoTarjeta + " registrada en el minuto " + minuto + "'.");
+                JOptionPane.showMessageDialog(this, "Tarjeta " + tipoTarjeta + " registrada al jugador " + j.getNombre() + " en el minuto " + minuto + "'.");
             }
         });
 
@@ -779,7 +794,7 @@ public class InterfazCampeonatoGUI extends JFrame {
             if (acta == null) return;
             acta.finalizarPartido();
             areaDetalleActa.setText(acta.generarTextoActa());
-            JOptionPane.showMessageDialog(this, "Partido finalizado oficialmente.");
+            JOptionPane.showMessageDialog(this, "Partido finalizado y resultado oficial calculado.");
         });
 
         btnAvanzarFecha.addActionListener(e -> {
